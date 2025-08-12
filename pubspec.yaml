@@ -1,0 +1,37 @@
+name: bangladesh_map_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.3 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI & Utilities
+  cupertino_icons: ^1.0.6
+  provider: ^6.1.2 # For state management
+  flutter_map: ^8.2.1 # For OpenStreetMap (latest stable)
+  latlong2: ^0.9.0 # Helper for LatLng
+  cached_network_image: ^3.3.1 # To display and cache network images
+  fluttertoast: ^8.2.4 # For simple pop-up messages
+
+  # Device & Permissions
+  geolocator: ^11.0.0 # For getting GPS location
+  permission_handler: ^11.4.0 # To handle permissions for location, camera etc.
+  image_picker: ^1.0.7 # To pick images from gallery or camera
+  flutter_image_compress: ^2.2.0 # To compress images before uploading
+
+  # Networking
+  http: ^1.2.1 # For making API requests
+  dio: ^5.4.1 # Alternative for http, good for file uploads
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

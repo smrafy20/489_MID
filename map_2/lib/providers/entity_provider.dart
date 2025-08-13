@@ -29,18 +29,20 @@ class EntityProvider with ChangeNotifier {
   Future<void> createEntity(String title, double lat, double lon, String? imagePath) async {
     try {
       await _apiService.createEntity(title, lat, lon, imagePath);
-      fetchEntities(); // Refresh the list
+      await fetchEntities(); // Refresh the list
     } catch (e) {
       print('Error creating entity: $e');
+      rethrow;
     }
   }
 
   Future<void> updateEntity(int id, String title, double lat, double lon, String? imagePath) async {
     try {
       await _apiService.updateEntity(id, title, lat, lon, imagePath);
-      fetchEntities(); // Refresh the list
+      await fetchEntities(); // Refresh the list
     } catch (e) {
       print('Error updating entity: $e');
+      rethrow;
     }
   }
 

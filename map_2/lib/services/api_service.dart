@@ -42,30 +42,45 @@ class ApiService {
   }
 
   Future<void> updateEntity(int id, String title, double lat, double lon, String? imagePath) async {
-    var request = http.MultipartRequest('PUT', Uri.parse('$_baseUrl?id=$id'));
-    request.fields['title'] = title;
-    request.fields['lat'] = lat.toString();
-    request.fields['lon'] = lon.toString();
     if (imagePath != null) {
+      var request = http.MultipartRequest('PUT', Uri.parse(_baseUrl));
+      request.fields['id'] = id.toString();
+      request.fields['title'] = title;
+      request.fields['lat'] = lat.toString();
+      request.fields['lon'] = lon.toString();
       request.files.add(await http.MultipartFile.fromPath('image', imagePath));
-    }
-
-    var response = await request.send();
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update entity');
+      var response = await request.send();
+      if (response.statusCode != 200) {
+        final responseBody = await response.stream.bytesToString();
+        throw Exception('Failed to update entity with image. Status: ${response.statusCode}, Body: $responseBody');
+      }
+    } else {
+      final response = await http.put(
+        Uri.parse(_baseUrl),
+        body: {
+          'id': id.toString(),
+          'title': title,
+          'lat': lat.toString(),
+          'lon': lon.toString(),
+        },
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Failed to update entity. Status: ${response.statusCode}, Body: ${response.body}');
+      }
     }
   }
 
   Future<void> deleteEntity(int id) async {
-    final response = await http.delete(
+    final response = await http.post(
       Uri.parse(_baseUrl),
-      body: json.encode({'id': id}),
-      headers: {'Content-Type': 'application/json'},
+      body: {
+        'action': 'delete',
+        'id': id.toString(),
+      },
     );
 
     if (response.statusCode != 200) {
-      throw Exception('Failed to delete entity');
+      throw Exception('Failed to delete entity. Status: ${response.statusCode}, Body: ${response.body}');
     }
   }
 }

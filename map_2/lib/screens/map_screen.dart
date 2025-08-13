@@ -6,6 +6,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../providers/entity_provider.dart';
 import '../models/entity.dart';
 
+import 'full_screen_image_viewer.dart';
+
 import 'entity_list_screen.dart';
 import 'entity_form_screen.dart';
 
@@ -38,64 +40,15 @@ class _MapScreenState extends State<MapScreen> {
 
   void _showImageDialog(Entity entity) {
     final url = _fullImageUrl(entity.image);
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        insetPadding: const EdgeInsets.all(16),
-        backgroundColor: Colors.transparent,
-        child: Stack(
-          alignment: Alignment.topRight,
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              padding: const EdgeInsets.all(12),
-              constraints: BoxConstraints(
-                maxWidth: MediaQuery.of(context).size.width * 0.95,
-                maxHeight: MediaQuery.of(context).size.height * 0.85,
-              ),
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(entity.title, style: Theme.of(context).textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    if (url != null)
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxHeight: MediaQuery.of(context).size.height * 0.6,
-                        ),
-                        child: CachedNetworkImage(
-                          imageUrl: url,
-                          fit: BoxFit.contain,
-                          placeholder: (c, u) => const SizedBox(
-                            height: 200,
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                          errorWidget: (c, u, e) => const SizedBox(
-                            height: 200,
-                            child: Center(child: Icon(Icons.error)),
-                          ),
-                        ),
-                      )
-                    else
-                      const SizedBox(
-                        height: 200,
-                        child: Center(child: Text('No image available')),
-                      ),
-                  ],
-                ),
-              ),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.black87),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
-        ),
+    if (url == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No image available')),
+      );
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => FullScreenImageViewer(title: entity.title, imageUrl: url),
       ),
     );
   }

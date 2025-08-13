@@ -4,6 +4,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../models/entity.dart';
+import 'package:map_2/screens/camera_screen.dart';
 import '../providers/entity_provider.dart';
 
 class EntityFormScreen extends StatefulWidget {
@@ -43,6 +44,21 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
+      });
+    }
+  }
+
+  Future<void> _takePicture() async {
+    final imagePath = await Navigator.push<String>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CameraScreen(),
+      ),
+    );
+
+    if (imagePath != null) {
+      setState(() {
+        _image = File(imagePath);
       });
     }
   }
@@ -142,6 +158,11 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
                         ElevatedButton(
                           onPressed: _pickImage,
                           child: const Text('Pick Image'),
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: _takePicture,
+                          child: const Text('Take Picture'),
                         ),
                       ],
                     ),

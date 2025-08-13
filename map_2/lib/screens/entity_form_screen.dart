@@ -23,6 +23,9 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
   late double _lon;
   File? _image;
   bool _isSubmitting = false;
+  // Tracks whether we should show a validation message below the photo picker
+  bool _showImageError = false;
+
 
   final _latController = TextEditingController();
   final _lonController = TextEditingController();
@@ -74,24 +77,47 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
   }
 
   Future<void> _submit() async {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      setState(() {
-        _isSubmitting = true;
-      });
-      final entityProvider = Provider.of<EntityProvider>(context, listen: false);
-      try {
-        if (widget.entity == null) {
-          await entityProvider.createEntity(_title, _lat, _lon, _image?.path);
-        } else {
-          await entityProvider.updateEntity(widget.entity!.id, _title, _lat, _lon, _image?.path);
-        }
-        Navigator.pop(context);
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit entity: $e')),
-        );
-      } finally {
+    // Validate form fields
+    final isValid = _formKey.currentState!.validate();
+
+    // Photo requirement: required for Add, optional for Edit
+    final bool imageRequired = widget.entity == null;
+    if (imageRequired && _image == null) {
+      setState(() => _showImageError = true);
+    } else {
+      setState(() => _showImageError = false);
+    }
+
+    if (!isValid || (imageRequired && _image == null)) {
+      // If validation fails, show a friendly message and stop submission
+      final msg = imageRequired
+          ? 'Please provide Title, Latitude, Longitude, and a Photo.'
+          : 'Please provide Title, Latitude, and Longitude.';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+      return;
+    }
+
+    _formKey.currentState!.save();
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    final entityProvider = Provider.of<EntityProvider>(context, listen: false);
+    try {
+      if (widget.entity == null) {
+        await entityProvider.createEntity(_title, _lat, _lon, _image?.path);
+      } else {
+        await entityProvider.updateEntity(widget.entity!.id, _title, _lat, _lon, _image?.path);
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to submit entity: $e')),
+      );
+    } finally {
+      if (mounted) {
         setState(() {
           _isSubmitting = false;
         });
@@ -117,8 +143,9 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
                       initialValue: widget.entity?.title,
                       decoration: const InputDecoration(labelText: 'Title'),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a title';
+                        // Require a non-empty Title
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Title is required';
                         }
                         return null;
                       },
@@ -129,8 +156,13 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
                       decoration: const InputDecoration(labelText: 'Latitude'),
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a latitude';
+                        // Require a numeric Latitude
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Latitude is required';
+                        }
+                        final v = double.tryParse(value);
+                        if (v == null || v < -90 || v > 90) {
+                          return 'Enter a valid latitude (-90 to 90)';
                         }
                         return null;
                       },
@@ -141,31 +173,45 @@ class _EntityFormScreenState extends State<EntityFormScreen> {
                       decoration: const InputDecoration(labelText: 'Longitude'),
                       keyboardType: TextInputType.number,
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a longitude';
+                        // Require a numeric Longitude
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Longitude is required';
+                        }
+                        final v = double.tryParse(value);
+                        if (v == null || v < -180 || v > 180) {
+                          return 'Enter a valid longitude (-180 to 180)';
                         }
                         return null;
                       },
                       onSaved: (value) => _lon = double.parse(value!),
                     ),
                     const SizedBox(height: 20),
+                    // Image is required; show preview or an error below if missing
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         _image == null
-                            ? const Text('No image selected.')
-                            : Image.file(_image!, width: 100, height: 100),
+                            ? Container(
+                                width: 100,
+                                height: 100,
+                                color: Colors.grey.shade200,
+                                child: const Icon(Icons.image_not_supported),
+                              )
+                            : Image.file(_image!, width: 100, height: 100, fit: BoxFit.cover),
                         const SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: _pickImage,
-                          child: const Text('Pick Image'),
-                        ),
+                        ElevatedButton(onPressed: _pickImage, child: const Text('Pick Image')),
                         const SizedBox(width: 10),
-                        ElevatedButton(
-                          onPressed: _takePicture,
-                          child: const Text('Take Picture'),
-                        ),
+                        ElevatedButton(onPressed: _takePicture, child: const Text('Take Picture')),
                       ],
                     ),
+                    if (_showImageError)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'A photo is required',
+                          style: TextStyle(color: Colors.redAccent),
+                        ),
+                      ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: _getCurrentLocation,

@@ -1,16 +1,89 @@
-# map_2
+# Bangladesh Map
 
-A new Flutter project.
+Flutter map demo that shows markers and a bottom info card with an expandable image. This README explains how to set up, build, and run the app on different platforms.
 
-## Getting Started
+## Prerequisites
+- Flutter SDK (stable). Install from https://flutter.dev
+- A supported toolchain for your target platform(s):
+  - Android: Android Studio, Android SDK, an emulator or a physical device with USB debugging
+  - iOS: Xcode and CocoaPods (macOS only)
+  - Web: Google Chrome
+  - Windows desktop: Visual Studio with Desktop development with C++ workload (Windows only)
 
-This project is a starting point for a Flutter application.
+Verify your installation:
+```
+flutter doctor
+```
 
-A few resources to get you started if this is your first Flutter project:
+## Get dependencies
+From the project root (this folder):
+```
+flutter pub get
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Run the app (quick start)
+List available devices and run on one of them:
+```
+flutter devices
+flutter run -d <device_id>
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Common targets
+- Web (Chrome):
+```
+flutter run -d chrome
+```
+- Android (emulator):
+```
+flutter emulators --launch <emulator_name>
+flutter run -d <device_id>
+```
+- Windows desktop:
+```
+flutter config --enable-windows-desktop
+flutter run -d windows
+```
+- iOS (on macOS):
+```
+open ios/Runner.xcworkspace   # first-time setup may require Xcode signing
+flutter run -d ios
+```
+
+## Build release artifacts
+- Android APK (release):
+```
+flutter build apk --release
+```
+- Android App Bundle (for Play Store):
+```
+flutter build appbundle
+```
+- iOS (archive via Xcode on macOS):
+```
+flutter build ios --release
+```
+- Web (static site in build/web):
+```
+flutter build web
+```
+- Windows desktop (release exe in build/windows):
+```
+flutter build windows
+```
+
+## Troubleshooting
+- If dependencies or builds act up:
+```
+flutter clean
+flutter pub get
+```
+- Accept Android licenses (if prompted):
+```
+flutter doctor --android-licenses
+```
+- Make sure a device is connected/available:
+```
+flutter devices
+```
+
+That’s it! If you need CI/CD or containerized builds, let me know your target platform and I’ll add an example workflow.
